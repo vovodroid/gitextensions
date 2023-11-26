@@ -243,7 +243,9 @@ namespace GitUI.CommandsDialogs
         {
             using (WaitCursorScope.Enter())
             {
-                FormProcess.ShowDialog(this, UICommands, arguments: GitCommandHelpers.ContinueRebaseCmd(), Module.WorkingDir, input: null, useDialogSettings: true);
+                Dictionary<string, string> envVariables = new() { { "GIT_EDITOR", "true" } };
+                FormProcess.ShowDialog(this, UICommands, arguments: GitCommandHelpers.ContinueRebaseCmd(), Module.WorkingDir, input: null, useDialogSettings: true,
+                                        null, chkInteractive.Checked ? null : envVariables);
 
                 if (!Module.InTheMiddleOfRebase())
                 {
@@ -252,6 +254,14 @@ namespace GitUI.CommandsDialogs
 
                 EnableButtons();
                 PatchGrid.Initialize();
+                string cmdOutput = envVariables.GetValueOrDefault("_output_string");
+                if (Module.InTheMiddleOfRebase() && !Module.InTheMiddleOfConflictedMerge() && cmdOutput.Contains("using previous resolution") && cmdOutput.Trim() != "Aborted")
+                {
+                    BeginInvoke((Action)(() =>
+                    {
+                        btnContinueRebase.PerformClick();
+                    }));
+                }
             }
         }
 
@@ -355,6 +365,13 @@ namespace GitUI.CommandsDialogs
 
                 EnableButtons();
                 PatchGrid.Initialize();
+                if (Module.InTheMiddleOfRebase() && !Module.InTheMiddleOfConflictedMerge() && cmdOutput.Contains("using previous resolution") && cmdOutput.Trim() != "Aborted")
+                {
+                    BeginInvoke((Action)(() =>
+                    {
+                        btnContinueRebase.PerformClick();
+                    }));
+                }
             }
         }
 
