@@ -177,7 +177,7 @@ namespace GitCommands
                 commandOutput = process.StandardOutput.BaseStream.SplitLogOutput().SingleOrDefault().ToArray();
             }
 
-            if (!TryParseRevision(commandOutput, out GitRevision? revision))
+            if (commandOutput.Length == 0 || !TryParseRevision(commandOutput, out GitRevision? revision))
             {
                 return null;
             }
